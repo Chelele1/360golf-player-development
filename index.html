@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b5c4d" />
+  <title>GamyPlan - Level 1 Group Practice Log</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">GamyPlan</p>
+        <h1>Level 1 Group Practice Log</h1>
+        <p class="sub">Level 1 includes Stage 1, Stage 2 and Stage 3. Record 1 to 10 students at the same practice.</p>
+      </div>
+      <div class="level-badge">LEVEL 1</div>
+    </header>
+
+    <section class="card intro">
+      <h2>Level 1</h2>
+      <p>
+        Select the stage once for the group. Each player receives an individual score, achievement,
+        stars, notes and signatures, and each player is stored as a separate database record.
+      </p>
+
+      <div class="stage-summary">
+        <button class="stage active" data-stage="1" type="button">
+          <span>Stage 1</span><strong>25</strong><small>steps / yards / meters</small>
+        </button>
+        <button class="stage" data-stage="2" type="button">
+          <span>Stage 2</span><strong>50</strong><small>steps / yards / meters</small>
+        </button>
+        <button class="stage" data-stage="3" type="button">
+          <span>Stage 3</span><strong>75</strong><small>steps / yards / meters</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Group Setup</p>
+          <h2 id="stageTitle">Stage 1 - 25</h2>
+        </div>
+        <div class="mini-badge" id="stageBadge">1</div>
+      </div>
+
+      <div class="grid three">
+        <label>
+          Practice date
+          <input id="practiceDate" type="date" />
+        </label>
+
+        <label>
+          Number of students
+          <select id="studentCount">
+            <option value="1">1 student</option>
+            <option value="2">2 students</option>
+            <option value="3">3 students</option>
+            <option value="4" selected>4 students</option>
+            <option value="5">5 students</option>
+            <option value="6">6 students</option>
+            <option value="7">7 students</option>
+            <option value="8">8 students</option>
+            <option value="9">9 students</option>
+            <option value="10">10 students</option>
+          </select>
+        </label>
+
+        <label>
+          Group / class name
+          <input id="groupName" type="text" placeholder="Optional: Saturday Group A" />
+        </label>
+      </div>
+
+      <div class="challenge">
+        <div>
+          <span class="label">Hole</span>
+          <strong>1</strong>
+        </div>
+        <div>
+          <span class="label">Distance to the green</span>
+          <strong id="distanceValue">25</strong>
+          <small>steps, yards, or meters to the edge of the green</small>
+        </div>
+        <div>
+          <span class="label">Challenge goal</span>
+          <strong>6 strokes or fewer</strong>
+          <small>Complete the hole in 6 shots or fewer to pass.</small>
+        </div>
+      </div>
+
+      <div class="rules">
+        <h3>Rules of Play</h3>
+        <ul>
+          <li>It is always allowed to use a tee except on the green.</li>
+          <li>In a bunker, the ball is taken out from the side without penalty. Rake the marks made when taking the ball from the bunker.</li>
+          <li>No out of bounds - place another ball.</li>
+        </ul>
+      </div>
+
+      <div class="bag">
+        <h3>Things I should carry in my bag</h3>
+        <div class="chips">
+          <span>Water</span>
+          <span>Golf Balls</span>
+          <span>Tees</span>
+          <span>Ball Markers</span>
+          <span>Ballmark Repair</span>
+          <span>Pencil</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Players</p>
+          <h2>Enter each player's practice</h2>
+        </div>
+        <div class="legend">Stars = strokes under 6</div>
+      </div>
+
+      <div id="studentCards" class="student-list"></div>
+
+      <div class="actions">
+        <button id="saveGroupBtn" class="primary" type="button">Save Group Practice</button>
+        <button id="resetGroupBtn" class="secondary" type="button">New Group Entry</button>
+      </div>
+
+      <p id="status" class="status" aria-live="polite"></p>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Practice Database</p>
+          <h2>Saved Individual Practices</h2>
+        </div>
+        <div class="actions compact">
+          <button id="exportBtn" class="secondary" type="button">Export CSV</button>
+          <button id="exportJsonBtn" class="secondary" type="button">Export JSON</button>
+          <button id="clearBtn" class="danger" type="button">Clear Local Data</button>
+        </div>
+      </div>
+
+      <p class="hint">
+        Every student in a group is saved as a separate record. Entries are always saved on this device.
+        If a Google Sheets endpoint is configured, each student's record is also sent to your central database.
+      </p>
+
+      <div class="filters">
+        <label>
+          Filter by player
+          <input id="filterPlayer" type="search" placeholder="Type a player name" />
+        </label>
+        <label>
+          Filter by stage
+          <select id="filterStage">
+            <option value="">All stages</option>
+            <option value="1">Stage 1</option>
+            <option value="2">Stage 2</option>
+            <option value="3">Stage 3</option>
+          </select>
+        </label>
+        <label>
+          Filter by group
+          <input id="filterGroup" type="search" placeholder="Group name" />
+        </label>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Player</th>
+              <th>Group</th>
+              <th>Stage</th>
+              <th>Distance</th>
+              <th>Score</th>
+              <th>Achievement</th>
+              <th>Stars</th>
+              <th>Notes</th>
+              <th>Player Sign.</th>
+              <th>Marker Sign.</th>
+              <th>Cloud</th>
+            </tr>
+          </thead>
+          <tbody id="practiceRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>GamyPlan - Level 1</footer>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
