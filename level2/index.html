@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>360Golf Level 2</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<main>
+  <header>
+    <b>360GOLF</b>
+    <h1>Level 2 Group Practice Log</h1>
+    <p>Level 2 - Initiation 2 includes Exercise 4, Exercise 5 and Exercise 6. Record 1 to 10 students at the same practice.</p>
+  </header>
+
+  <section>
+    <h2>Level 2 - Initiation 2</h2>
+    <p>Select the exercise once for the group. Each player receives an individual score, achievement, stars and notes.</p>
+
+    <div id="ex">
+      <button data-e="4">
+        Exercise 4<br>
+        <strong>50 / 100</strong><br>
+        yards
+      </button>
+
+      <button data-e="5">
+        Exercise 5<br>
+        <strong>75 / 125</strong><br>
+        yards
+      </button>
+
+      <button data-e="6">
+        Exercise 6<br>
+        <strong>100 / 150</strong><br>
+        yards
+      </button>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="title">Exercise 4 - 50 / 100</h2>
+
+    <label>
+      Practice date
+      <input id="date" type="date">
+    </label>
+
+    <label>
+      Number of students
+      <select id="count">
+        <option value="1">1 student</option>
+        <option value="2">2 students</option>
+        <option value="3">3 students</option>
+        <option value="4" selected>4 students</option>
+        <option value="5">5 students</option>
+        <option value="6">6 students</option>
+        <option value="7">7 students</option>
+        <option value="8">8 students</option>
+        <option value="9">9 students</option>
+        <option value="10">10 students</option>
+      </select>
+    </label>
+
+    <label>
+      Group / class name
+      <input id="group" placeholder="Optional: Saturday Group A">
+    </label>
+
+    <div class="holes">
+      <div>
+        <b>Hole 1</b>
+        <span id="d1">50</span> yards
+        <br>
+        Challenge: 5 strokes
+      </div>
+
+      <div>
+        <b>Hole 2</b>
+        <span id="d2">100</span> yards
+        <br>
+        Challenge: 6 strokes
+      </div>
+    </div>
+
+    <div class="rules">
+      <h3>Rules of Play</h3>
+      <ul>
+        <li>It is always allowed to use a tee except on the green.</li>
+        <li>In a bunker, the ball is taken out from behind without penalty. Rake the marks made when taking the ball from the bunker.</li>
+        <li>No out of bounds penalty - play another ball and count the 2 shots.</li>
+      </ul>
+
+      <h3>Things I should carry in my bag</h3>
+      <p>Water · Golf Balls · Tees · Ball Markers · Ballmark Repair · Pencil</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Enter each player's practice</h2>
+
+    <div id="players"></div>
+
+    <button id="save">Save Group Practice</button>
+    <button id="new">New Group Entry</button>
+
+    <p id="status"></p>
+  </section>
+
+  <section>
+    <h2>Saved Individual Practices</h2>
+
+    <button id="csv">Export CSV</button>
+    <button id="json">Export JSON</button>
+    <button id="clear">Clear Local Data</button>
+
+    <div class="filters">
+      <input id="fp" placeholder="Filter by player">
+
+      <select id="fe">
+        <option value="">All exercises</option>
+        <option value="4">Exercise 4</option>
+        <option value="5">Exercise 5</option>
+        <option value="6">Exercise 6</option>
+      </select>
+
+      <input id="fg" placeholder="Filter by group">
+    </div>
+
+    <div class="table">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Player</th>
+            <th>Group</th>
+            <th>Exercise</th>
+            <th>H1 Distance</th>
+            <th>H1 Score</th>
+            <th>H1 Stars</th>
+            <th>H2 Distance</th>
+            <th>H2 Score</th>
+            <th>H2 Stars</th>
+            <th>Achievement</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="app.js"></script>
+
+</body>
+</html>
