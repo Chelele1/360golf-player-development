@@ -2,7 +2,7 @@
 const STORAGE_KEY = "360golf_level1_practices_v2_group";
 
 const state = {
-  stage: 1,
+  exercise: 1,
   distances: { 1: 25, 2: 50, 3: 75 }
 };
 
@@ -38,16 +38,16 @@ function calculateResult(score) {
   };
 }
 
-function selectStage(stage) {
-  state.stage = Number(stage);
-  const distance = state.distances[state.stage];
+function selectExercise(exercise) {
+  state.exercise = Number(exercise);
+  const distance = state.distances[state.exercise];
 
   document.querySelectorAll(".stage").forEach((button) => {
-    button.classList.toggle("active", Number(button.dataset.stage) === state.stage);
+    button.classList.toggle("active", Number(button.dataset.exercise) === state.exercise);
   });
 
-  $("stageTitle").textContent = `Stage ${state.stage} - ${distance}`;
-  $("stageBadge").textContent = String(state.stage);
+  $("exerciseTitle").textContent = `Exercise ${state.exercise} - ${distance}`;
+  $("exerciseBadge").textContent = String(state.exercise);
   $("distanceValue").textContent = String(distance);
 }
 
@@ -65,6 +65,11 @@ function studentCard(index) {
         <label>
           Score
           <input class="student-score" type="number" min="1" max="20" inputmode="numeric" placeholder="1-20" />
+        </label>
+
+        <label>
+          Achievement
+          <input class="student-achievement" type="text" autocomplete="off" placeholder="" />
         </label>
 
         <div class="result-inline">
@@ -91,6 +96,7 @@ function renderStudentCards() {
     name: card.querySelector(".student-name")?.value || "",
     score: card.querySelector(".student-score")?.value || "",
     notes: card.querySelector(".student-notes")?.value || "",
+    achievement: card.querySelector(".student-achievement")?.value || "",
   }));
 
   container.innerHTML = Array.from({ length: count }, (_, i) => studentCard(i)).join("");
@@ -101,6 +107,7 @@ function renderStudentCards() {
       card.querySelector(".student-name").value = saved.name;
       card.querySelector(".student-score").value = saved.score;
       card.querySelector(".student-notes").value = saved.notes;
+      card.querySelector(".student-achievement").value = saved.achievement;
     }
 
     card.querySelector(".student-score").addEventListener("input", () => updateStudentResult(card));
@@ -134,6 +141,7 @@ function readGroupEntries() {
       playerName: card.querySelector(".student-name").value.trim(),
       score,
       notes: card.querySelector(".student-notes").value.trim(),
+      achievement: card.querySelector(".student-achievement").value.trim(),
       date,
       groupName,
       result
@@ -193,12 +201,13 @@ async function saveGroupPractice() {
     date: entry.date,
     groupName: entry.groupName,
     level: 1,
-    stage: state.stage,
+    exercise: state.exercise,
     hole: 1,
-    distance: state.distances[state.stage],
+    distance: state.distances[state.exercise],
     distanceUnit: "yards",
     goalStrokes: 6,
     score: entry.score,
+    achievement: entry.achievement,
     result: entry.result.result,
     stars: entry.result.stars,
     notes: entry.notes,
@@ -262,18 +271,18 @@ function escapeHtml(value) {
 
 function renderTable() {
   const playerFilter = $("filterPlayer").value.trim().toLowerCase();
-  const stageFilter = $("filterStage").value;
+  const exerciseFilter = $("filterExercise").value;
   const groupFilter = $("filterGroup").value.trim().toLowerCase();
 
   const rows = getPractices().filter((r) => {
     const byPlayer = !playerFilter || String(r.playerName).toLowerCase().includes(playerFilter);
-    const byStage = !stageFilter || String(r.stage) === stageFilter;
+    const byExercise = !exerciseFilter || String(r.exercise) === exerciseFilter;
     const byGroup = !groupFilter || String(r.groupName || "").toLowerCase().includes(groupFilter);
-    return byPlayer && byStage && byGroup;
+    return byPlayer && byExercise && byGroup;
   });
 
   if (!rows.length) {
-    $("practiceRows").innerHTML = `<tr><td colspan="12">No saved practices match the current filter.</td></tr>`;
+    $("practiceRows").innerHTML = `<tr><td colspan="11">No saved practices match the current filter.</td></tr>`;
     return;
   }
 
@@ -282,9 +291,10 @@ function renderTable() {
       <td>${escapeHtml(r.date)}</td>
       <td>${escapeHtml(r.playerName)}</td>
       <td>${escapeHtml(r.groupName || "")}</td>
-      <td>${escapeHtml(r.stage)}</td>
+      <td>${escapeHtml(r.exercise)}</td>
       <td>${escapeHtml(r.distance)}</td>
       <td>${escapeHtml(r.score)}</td>
+      <td>${escapeHtml(r.achievement)}</td>
       <td class="${r.result === "PASS" ? "pass" : "not-pass"}">${escapeHtml(r.result)}</td>
       <td>${escapeHtml(r.stars)}</td>
       <td>${escapeHtml(r.notes)}</td>
@@ -318,8 +328,8 @@ function exportCSV() {
   }
 
   const fields = [
-    "timestamp","date","playerName","groupName","groupSessionId","level","stage","hole","distance",
-    "distanceUnit","goalStrokes","score","result","stars","notes","cloudSaved"
+    "timestamp","date","playerName","groupName","groupSessionId","level","exercise","hole","distance",
+    "distanceUnit","goalStrokes","score","achievement","result","stars","notes","cloudSaved"
   ];
 
   const csv = [
@@ -353,7 +363,7 @@ function clearLocalData() {
 }
 
 document.querySelectorAll(".stage").forEach((button) => {
-  button.addEventListener("click", () => selectStage(button.dataset.stage));
+  button.addEventListener("click", () => selectExercise(button.dataset.exercise));
 });
 
 $("studentCount").addEventListener("change", renderStudentCards);
@@ -363,10 +373,10 @@ $("exportBtn").addEventListener("click", exportCSV);
 $("exportJsonBtn").addEventListener("click", exportJSON);
 $("clearBtn").addEventListener("click", clearLocalData);
 $("filterPlayer").addEventListener("input", renderTable);
-$("filterStage").addEventListener("change", renderTable);
+$("filterExercise").addEventListener("change", renderTable);
 $("filterGroup").addEventListener("input", renderTable);
 
 $("practiceDate").value = todayLocal();
-selectStage(1);
+selectExercise(1);
 renderStudentCards();
 renderTable();

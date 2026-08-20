@@ -20,8 +20,8 @@ function doPost(e) {
       sheet = ss.insertSheet(SHEET_NAME);
       sheet.appendRow([
         "Timestamp","Practice Date","Player Name","Group Name","Group Session ID",
-        "Level","Stage","Hole","Distance","Distance Unit","Goal Strokes",
-        "Score","Result","Stars","Notes","Record ID"
+        "Level","Exercise","Hole","Distance","Distance Unit","Goal Strokes",
+        "Score","Achievement","Result","Stars","Notes","Record ID"
       ]);
       sheet.setFrozenRows(1);
     }
@@ -33,12 +33,13 @@ function doPost(e) {
       data.groupName || "",
       data.groupSessionId || "",
       data.level || 1,
-      data.stage || "",
+      data.exercise || "",
       data.hole || 1,
       data.distance || "",
       "yards",
       data.goalStrokes || 6,
       data.score || "",
+      data.achievement || "",
       data.result || "",
       data.stars ?? "",
       data.notes || "",

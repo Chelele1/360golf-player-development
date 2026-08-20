@@ -13,7 +13,7 @@
       <div>
         <p class="eyebrow">360Golf</p>
         <h1>Level 1 Group Practice Log</h1>
-        <p class="sub">Level 1 includes Stage 1, Stage 2 and Stage 3. Record 1 to 10 students at the same practice.</p>
+        <p class="sub">Level 1 includes Exercise 1, Exercise 2 and Exercise 3. Record 1 to 10 students at the same practice.</p>
       </div>
       <div class="level-badge">LEVEL 1</div>
     </header>
@@ -21,18 +21,18 @@
     <section class="card intro">
       <h2>Level 1</h2>
       <p>
-        Select the stage once for the group. Each player receives an individual score,
+        Select the exercise once for the group. Each player receives an individual score,
       </p>
 
       <div class="stage-summary">
-        <button class="stage active" data-stage="1" type="button">
-          <span>Stage 1</span><strong>25</strong><small>yards</small>
+        <button class="stage active" data-exercise="1" type="button">
+          <span>Exercise 1</span><strong>25</strong><small>yards</small>
         </button>
-        <button class="stage" data-stage="2" type="button">
-          <span>Stage 2</span><strong>50</strong><small>yards</small>
+        <button class="stage" data-exercise="2" type="button">
+          <span>Exercise 2</span><strong>50</strong><small>yards</small>
         </button>
-        <button class="stage" data-stage="3" type="button">
-          <span>Stage 3</span><strong>75</strong><small>yards</small>
+        <button class="stage" data-exercise="3" type="button">
+          <span>Exercise 3</span><strong>75</strong><small>yards</small>
         </button>
       </div>
     </section>
@@ -41,9 +41,9 @@
       <div class="section-head">
         <div>
           <p class="eyebrow">Group Setup</p>
-          <h2 id="stageTitle">Stage 1 - 25</h2>
+          <h2 id="exerciseTitle">Exercise 1 - 25</h2>
         </div>
-        <div class="mini-badge" id="stageBadge">1</div>
+        <div class="mini-badge" id="exerciseBadge">1</div>
       </div>
 
       <div class="grid three">
@@ -156,12 +156,12 @@
           <input id="filterPlayer" type="search" placeholder="Type a player name" />
         </label>
         <label>
-          Filter by stage
-          <select id="filterStage">
-            <option value="">All stages</option>
-            <option value="1">Stage 1</option>
-            <option value="2">Stage 2</option>
-            <option value="3">Stage 3</option>
+          Filter by exercise
+          <select id="filterExercise">
+            <option value="">All exercises</option>
+            <option value="1">Exercise 1</option>
+            <option value="2">Exercise 2</option>
+            <option value="3">Exercise 3</option>
           </select>
         </label>
         <label>
@@ -177,9 +177,10 @@
               <th>Date</th>
               <th>Player</th>
               <th>Group</th>
-              <th>Stage</th>
+              <th>Exercise</th>
               <th>Distance</th>
               <th>Score</th>
+              <th>Achievement</th>
               <th>Result</th>
               <th>Stars</th>
               <th>Notes</th>

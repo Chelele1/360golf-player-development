@@ -247,7 +247,7 @@ input:focus, textarea:focus, select:focus {
 
 .student-fields {
   display: grid;
-  grid-template-columns: 1.35fr .65fr .65fr;
+  grid-template-columns: 1.35fr .65fr .75fr .65fr;
   gap: 12px;
   align-items: end;
 }
