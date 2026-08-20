@@ -1,4 +1,4 @@
-# GamyPlan - Level 1 Group Practice Log
+# 360Golf - Level 1 Group Practice Log
 
 This version is designed for one coach working with **1 to 10 students at the same time**.
 
@@ -6,9 +6,9 @@ This version is designed for one coach working with **1 to 10 students at the sa
 
 Level 1 contains all three stages:
 
-- Stage 1: 1 hole from 25 steps, yards, or meters to the edge of the green.
-- Stage 2: 1 hole from 50 steps, yards, or meters to the edge of the green.
-- Stage 3: 1 hole from 75 steps, yards, or meters to the edge of the green.
+- Stage 1: 1 hole from 25 yards to the edge of the green.
+- Stage 2: 1 hole from 50 yards to the edge of the green.
+- Stage 3: 1 hole from 75 yards to the edge of the green.
 - Goal: complete the hole in 6 strokes or fewer.
 - Star system: 1 star for each stroke under the 6-stroke limit.
 - Tee rule: tee may be used for all shots except on the green.
@@ -26,9 +26,7 @@ Level 1 contains all three stages:
    - name
    - score
    - notes
-   - player signature/initials
-   - marker/coach signature/initials
-6. Achievement and stars are calculated separately for every player.
+6. Result and stars are calculated separately for every player.
 7. Press **Save Group Practice**.
 
 Even though the players practiced together, **every player is saved as an individual record**.
@@ -75,8 +73,7 @@ Every student submitted from a group becomes a separate row in the Google Sheet.
 ## Database columns
 
 Timestamp, Practice Date, Player Name, Group Name, Group Session ID, Level, Stage, Hole,
-Distance, Distance Unit, Goal Strokes, Score, Achievement, Stars, Notes,
-Player Signature, Marker Signature, Record ID.
+Distance, Distance Unit, Goal Strokes, Score, Result, Stars, Notes,
 
 ## Backup
 

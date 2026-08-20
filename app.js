@@ -1,5 +1,5 @@
 
-const STORAGE_KEY = "gamyplan_level1_practices_v2_group";
+const STORAGE_KEY = "360golf_level1_practices_v2_group";
 
 const state = {
   stage: 1,
@@ -28,12 +28,12 @@ function setPractices(rows) {
 
 function calculateResult(score) {
   if (!Number.isFinite(score) || score <= 0) {
-    return { achievement: "", stars: "" };
+    return { result: "", stars: "" };
   }
 
   const passed = score <= 6;
   return {
-    achievement: passed ? "PASS" : "KEEP PRACTICING",
+    result: passed ? "PASS" : "KEEP PRACTICING",
     stars: passed ? Math.max(0, 6 - score) : 0
   };
 }
@@ -68,8 +68,8 @@ function studentCard(index) {
         </label>
 
         <div class="result-inline">
-          <span class="label">Achievement</span>
-          <strong class="student-achievement">Waiting</strong>
+          <span class="label">Result</span>
+          <strong class="student-result"></strong>
         </div>
 
         <div class="result-inline">
@@ -82,16 +82,6 @@ function studentCard(index) {
         <label>
           Practice notes
           <textarea class="student-notes" rows="2" placeholder="Optional notes for this player"></textarea>
-        </label>
-
-        <label>
-          Player's signature / initials
-          <input class="student-player-signature" type="text" placeholder="Player initials/name" />
-        </label>
-
-        <label>
-          Marker's signature / initials
-          <input class="student-marker-signature" type="text" placeholder="Coach/marker initials" />
         </label>
       </div>
     </article>
@@ -106,8 +96,6 @@ function renderStudentCards() {
     name: card.querySelector(".student-name")?.value || "",
     score: card.querySelector(".student-score")?.value || "",
     notes: card.querySelector(".student-notes")?.value || "",
-    playerSignature: card.querySelector(".student-player-signature")?.value || "",
-    markerSignature: card.querySelector(".student-marker-signature")?.value || ""
   }));
 
   container.innerHTML = Array.from({ length: count }, (_, i) => studentCard(i)).join("");
@@ -118,8 +106,6 @@ function renderStudentCards() {
       card.querySelector(".student-name").value = saved.name;
       card.querySelector(".student-score").value = saved.score;
       card.querySelector(".student-notes").value = saved.notes;
-      card.querySelector(".student-player-signature").value = saved.playerSignature;
-      card.querySelector(".student-marker-signature").value = saved.markerSignature;
     }
 
     card.querySelector(".student-score").addEventListener("input", () => updateStudentResult(card));
@@ -130,18 +116,18 @@ function renderStudentCards() {
 function updateStudentResult(card) {
   const score = Number(card.querySelector(".student-score").value);
   const result = calculateResult(score);
-  const achievement = card.querySelector(".student-achievement");
+  const result = card.querySelector(".student-result");
   const stars = card.querySelector(".student-stars");
 
-  if (!result.achievement) {
-    achievement.textContent = "Waiting";
-    achievement.className = "student-achievement";
+  if (!result.result) {
+    result.textContent = "";
+    result.className = "student-result";
     stars.textContent = "-";
     return;
   }
 
-  achievement.textContent = result.achievement;
-  achievement.className = "student-achievement " + (result.achievement === "PASS" ? "pass" : "not-pass");
+  result.textContent = result.result;
+  result.className = "student-result " + (result.result === "PASS" ? "pass" : "not-pass");
   stars.textContent = String(result.stars);
 }
 
@@ -158,8 +144,6 @@ function readGroupEntries() {
       playerName: card.querySelector(".student-name").value.trim(),
       score,
       notes: card.querySelector(".student-notes").value.trim(),
-      playerSignature: card.querySelector(".student-player-signature").value.trim(),
-      markerSignature: card.querySelector(".student-marker-signature").value.trim(),
       date,
       groupName,
       result
@@ -222,14 +206,12 @@ async function saveGroupPractice() {
     stage: state.stage,
     hole: 1,
     distance: state.distances[state.stage],
-    distanceUnit: "steps/yards/meters",
+    distanceUnit: "yards",
     goalStrokes: 6,
     score: entry.score,
-    achievement: entry.result.achievement,
+    result: entry.result.result,
     stars: entry.result.stars,
     notes: entry.notes,
-    playerSignature: entry.playerSignature,
-    markerSignature: entry.markerSignature,
     cloudSaved: false
   }));
 
@@ -313,11 +295,9 @@ function renderTable() {
       <td>${escapeHtml(r.stage)}</td>
       <td>${escapeHtml(r.distance)}</td>
       <td>${escapeHtml(r.score)}</td>
-      <td class="${r.achievement === "PASS" ? "pass" : "not-pass"}">${escapeHtml(r.achievement)}</td>
+      <td class="${r.result === "PASS" ? "pass" : "not-pass"}">${escapeHtml(r.result)}</td>
       <td>${escapeHtml(r.stars)}</td>
       <td>${escapeHtml(r.notes)}</td>
-      <td>${escapeHtml(r.playerSignature)}</td>
-      <td>${escapeHtml(r.markerSignature)}</td>
       <td>${r.cloudSaved ? "Saved" : "Local"}</td>
     </tr>
   `).join("");
@@ -349,7 +329,7 @@ function exportCSV() {
 
   const fields = [
     "timestamp","date","playerName","groupName","groupSessionId","level","stage","hole","distance",
-    "distanceUnit","goalStrokes","score","achievement","stars","notes","playerSignature","markerSignature","cloudSaved"
+    "distanceUnit","goalStrokes","score","result","stars","notes","cloudSaved"
   ];
 
   const csv = [
@@ -357,7 +337,7 @@ function exportCSV() {
     ...rows.map(row => fields.map(key => csvEscape(row[key])).join(","))
   ].join("\n");
 
-  downloadBlob("gamyplan-level1-practices.csv", "text/csv;charset=utf-8", csv);
+  downloadBlob("360golf-level1-practices.csv", "text/csv;charset=utf-8", csv);
 }
 
 function exportJSON() {
@@ -368,7 +348,7 @@ function exportJSON() {
   }
 
   downloadBlob(
-    "gamyplan-level1-practices.json",
+    "360golf-level1-practices.json",
     "application/json;charset=utf-8",
     JSON.stringify(rows, null, 2)
   );
