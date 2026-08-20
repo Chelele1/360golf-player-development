@@ -68,11 +68,6 @@ function studentCard(index) {
         </label>
 
         <div class="result-inline">
-          <span class="label">Result</span>
-          <strong class="student-result"></strong>
-        </div>
-
-        <div class="result-inline">
           <span class="label">Stars</span>
           <strong class="student-stars">-</strong>
         </div>
@@ -116,18 +111,13 @@ function renderStudentCards() {
 function updateStudentResult(card) {
   const score = Number(card.querySelector(".student-score").value);
   const result = calculateResult(score);
-  const result = card.querySelector(".student-result");
   const stars = card.querySelector(".student-stars");
 
   if (!result.result) {
-    result.textContent = "";
-    result.className = "student-result";
     stars.textContent = "-";
     return;
   }
 
-  result.textContent = result.result;
-  result.className = "student-result " + (result.result === "PASS" ? "pass" : "not-pass");
   stars.textContent = String(result.stars);
 }
 
