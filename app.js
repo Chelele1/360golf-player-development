@@ -280,7 +280,10 @@ async function sendToCloud(entry) {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(entry)
     });
-    return { attempted: true, ok: response.ok };
+    const text = await response.text();
+    let acknowledgement;
+    try { acknowledgement = JSON.parse(text); } catch { acknowledgement = null; }
+    return { attempted: true, ok: response.ok && acknowledgement?.ok === true && acknowledgement.id === entry.id };
   } catch (error) {
     console.error("Cloud save failed:", error);
     return { attempted: true, ok: false };
@@ -314,7 +317,13 @@ async function saveGroupPracticeOnce() {
   if (entries.some(entry => !currentCards()[entry.index]?.locked)) return;
   const recordKey = String(state.exercise);
   if (draft.records[recordKey]) {
-    $("status").textContent = "This exercise is already saved. Its scores cannot be changed. Select another exercise or start a new group entry.";
+    const ids = draft.records[recordKey];
+    const pending = getPractices().filter(record => ids.includes(record.id) && !record.cloudSaved);
+    if (!pending.length) {
+      $("status").textContent = "This exercise is already saved. Its scores cannot be changed.";
+      return;
+    }
+    await syncPracticeRecords(pending);
     return;
   }
   const groupSessionId = draft.sessionId;
@@ -350,6 +359,10 @@ async function saveGroupPracticeOnce() {
   $("status").textContent = `Saved ${newRecords.length} individual practice record${newRecords.length === 1 ? "" : "s"} on this device...`;
   $("status").className = "status ok";
 
+  await syncPracticeRecords(newRecords);
+}
+
+async function syncPracticeRecords(newRecords) {
   let cloudSuccess = 0;
   let cloudAttempted = 0;
 
@@ -373,7 +386,7 @@ async function saveGroupPracticeOnce() {
       `Saved ${newRecords.length} individual record${newRecords.length === 1 ? "" : "s"} locally and to the central Google Sheet.`;
   } else {
     $("status").textContent =
-      `Saved all ${newRecords.length} records locally. ${cloudSuccess} reached the Google Sheet; ${newRecords.length - cloudSuccess} did not.`;
+      `Saved all ${newRecords.length} records locally. ${cloudSuccess} reached the Google Sheet; ${newRecords.length - cloudSuccess} did not. Press Save Group Practice to retry without creating duplicates.`;
     $("status").className = "status error";
   }
 
