@@ -1,12 +1,108 @@
 
 const STORAGE_KEY = "360golf_level1_practices_v2_group";
 
+const DRAFT_KEY = "360golf_level1_locked_draft_v1";
+
 const state = {
   exercise: 1,
   distances: { 1: 25, 2: 50, 3: 75 }
 };
 
 const $ = (id) => document.getElementById(id);
+
+// This prevents normal UI edits on this device. Server-side enforcement and
+// authenticated player identities are required to resist storage clearing.
+function newDraft() {
+  return { sessionId: crypto.randomUUID(), exercise: 1, date: todayLocal(),
+    groupName: "", count: 4, exercises: {}, records: {} };
+}
+function loadDraft() {
+  try {
+    const value = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (value && value.sessionId && value.exercises && value.records) return value;
+  } catch (error) { console.error("Draft could not be restored", error); }
+  return newDraft();
+}
+let draft = loadDraft();
+function persistDraft() {
+  localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+}
+function currentCards() {
+  return draft.exercises[state.exercise] ||= [];
+}
+function captureDraft() {
+  draft.exercise = state.exercise;
+  draft.date = $("practiceDate").value;
+  draft.groupName = $("groupName").value;
+  draft.count = Number($("studentCount").value);
+  const cards = currentCards();
+  document.querySelectorAll(".student-card").forEach((card, i) => {
+    const old = cards[i] || {};
+    cards[i] = {
+      name: old.locked ? old.name : card.querySelector(".student-name").value,
+      score: old.locked ? old.score : card.querySelector(".student-score").value,
+      locked: Boolean(old.locked),
+      lockedAt: old.lockedAt || "",
+      notes: card.querySelector(".student-notes").value,
+      achievement: card.querySelector(".student-achievement").value
+    };
+  });
+  persistDraft();
+}
+function anyLocked() {
+  return Object.values(draft.exercises).some(cards => cards.some(c => c && c.locked));
+}
+function applyLocks() {
+  const cards = currentCards();
+  document.querySelectorAll(".student-card").forEach((card, i) => {
+    const saved = cards[i];
+    const input = card.querySelector(".student-score");
+    const name = card.querySelector(".student-name");
+    input.readOnly = Boolean(saved?.locked);
+    name.readOnly = Boolean(saved?.locked);
+    if (saved?.locked) { input.value = saved.score; name.value = saved.name; }
+    input.title = saved?.locked ? "Score locked. It cannot be changed." : "";
+    card.querySelector(".score-lock-note").textContent = saved?.locked
+      ? "Score locked" : "The score locks when you leave this box or press Enter. Enter the player name first.";
+  });
+  const exerciseSaved = Boolean(draft.records[String(state.exercise)]);
+  document.querySelectorAll(".student-card").forEach(card => {
+    card.querySelector(".student-notes").readOnly = exerciseSaved;
+    card.querySelector(".student-achievement").readOnly = exerciseSaved;
+  });
+  $("studentCount").disabled = Object.keys(draft.records).length > 0;
+  $("practiceDate").disabled = anyLocked();
+  $("groupName").readOnly = anyLocked();
+}
+function lockScore(card) {
+  const index = Number(card.dataset.studentIndex);
+  const input = card.querySelector(".student-score");
+  if (currentCards()[index]?.locked) { applyLocks(); return; }
+  if (input.value === "") return;
+  const score = Number(input.value);
+  if (!Number.isInteger(score) || score < 1 || score > 20) {
+    $("status").textContent = "Enter a whole-number score from 1 to 20.";
+    $("status").className = "status error";
+    return;
+  }
+  if (!card.querySelector(".student-name").value.trim()) {
+    $("status").textContent = "Enter the player name before recording the score.";
+    $("status").className = "status error";
+    return;
+  }
+  captureDraft();
+  const saved = currentCards()[index];
+  saved.locked = true;
+  saved.lockedAt = new Date().toISOString();
+  try { persistDraft(); } catch (error) {
+    saved.locked = false;
+    $("status").textContent = "Cannot store the locked score. Do not continue; enable browser storage first.";
+    $("status").className = "status error";
+    return;
+  }
+  applyLocks();
+  updateStudentResult(card);
+}
 
 function todayLocal() {
   const now = new Date();
@@ -39,7 +135,9 @@ function calculateResult(score) {
 }
 
 function selectExercise(exercise) {
+  if ($("studentCards").children.length) captureDraft();
   state.exercise = Number(exercise);
+  draft.exercise = state.exercise;
   const distance = state.distances[state.exercise];
 
   document.querySelectorAll(".stage").forEach((button) => {
@@ -49,6 +147,8 @@ function selectExercise(exercise) {
   $("exerciseTitle").textContent = `Exercise ${state.exercise} - ${distance}`;
   $("exerciseBadge").textContent = String(state.exercise);
   $("distanceValue").textContent = String(distance);
+  renderStudentCards();
+  persistDraft();
 }
 
 function studentCard(index) {
@@ -64,7 +164,8 @@ function studentCard(index) {
 
         <label>
           Score
-          <input class="student-score" type="number" min="1" max="20" inputmode="numeric" placeholder="1-20" />
+          <input class="student-score" type="number" min="1" max="20" step="1" inputmode="numeric" placeholder="1-20" />
+          <small class="score-lock-note" aria-live="polite"></small>
         </label>
 
         <label>
@@ -92,12 +193,7 @@ function renderStudentCards() {
   const count = Number($("studentCount").value);
   const container = $("studentCards");
 
-  const current = Array.from(container.querySelectorAll(".student-card")).map((card) => ({
-    name: card.querySelector(".student-name")?.value || "",
-    score: card.querySelector(".student-score")?.value || "",
-    notes: card.querySelector(".student-notes")?.value || "",
-    achievement: card.querySelector(".student-achievement")?.value || "",
-  }));
+  const current = currentCards();
 
   container.innerHTML = Array.from({ length: count }, (_, i) => studentCard(i)).join("");
 
@@ -110,9 +206,18 @@ function renderStudentCards() {
       card.querySelector(".student-achievement").value = saved.achievement;
     }
 
-    card.querySelector(".student-score").addEventListener("input", () => updateStudentResult(card));
+    const scoreInput = card.querySelector(".student-score");
+    scoreInput.addEventListener("input", () => { applyLocks(); updateStudentResult(card); captureDraft(); });
+    scoreInput.addEventListener("blur", () => lockScore(card));
+    scoreInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") { event.preventDefault(); lockScore(card); scoreInput.blur(); }
+    });
+    card.querySelectorAll("input:not(.student-score), textarea").forEach(input => {
+      input.addEventListener("input", captureDraft);
+    });
     updateStudentResult(card);
   });
+  applyLocks();
 }
 
 function updateStudentResult(card) {
@@ -155,7 +260,7 @@ function validateGroup(entries) {
   for (const entry of entries) {
     const n = entry.index + 1;
     if (!entry.playerName) return `Please enter the name for Student ${n}.`;
-    if (!Number.isFinite(entry.score) || entry.score < 1 || entry.score > 20) {
+    if (!Number.isInteger(entry.score) || entry.score < 1 || entry.score > 20) {
       return `Please enter a score from 1 to 20 for ${entry.playerName || `Student ${n}`}.`;
     }
   }
@@ -183,6 +288,20 @@ async function sendToCloud(entry) {
 }
 
 async function saveGroupPractice() {
+  const button = $("saveGroupBtn");
+  if (button.disabled) return;
+  button.disabled = true;
+  try { await saveGroupPracticeOnce(); }
+  catch (error) {
+    console.error(error);
+    $("status").textContent = "Could not save. Keep this page open and try again.";
+    $("status").className = "status error";
+  } finally { button.disabled = false; }
+}
+
+async function saveGroupPracticeOnce() {
+  document.querySelectorAll(".student-card").forEach(lockScore);
+  captureDraft();
   const entries = readGroupEntries();
   const error = validateGroup(entries);
 
@@ -192,11 +311,18 @@ async function saveGroupPractice() {
     return;
   }
 
-  const groupSessionId = crypto.randomUUID ? crypto.randomUUID() : `group-${Date.now()}-${Math.random()}`;
+  if (entries.some(entry => !currentCards()[entry.index]?.locked)) return;
+  const recordKey = String(state.exercise);
+  if (draft.records[recordKey]) {
+    $("status").textContent = "This exercise is already saved. Its scores cannot be changed. Select another exercise or start a new group entry.";
+    return;
+  }
+  const groupSessionId = draft.sessionId;
   const newRecords = entries.map((entry) => ({
-    id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${entry.index}-${Math.random()}`,
+    id: `${groupSessionId}-exercise-${state.exercise}-student-${entry.index}`,
     groupSessionId,
     timestamp: new Date().toISOString(),
+    scoreLockedAt: currentCards()[entry.index].lockedAt,
     playerName: entry.playerName,
     date: entry.date,
     groupName: entry.groupName,
@@ -216,6 +342,9 @@ async function saveGroupPractice() {
 
   const rows = getPractices();
   setPractices([...newRecords.reverse(), ...rows]);
+  draft.records[recordKey] = newRecords.map(record => record.id);
+  persistDraft();
+  applyLocks();
   renderTable();
 
   $("status").textContent = `Saved ${newRecords.length} individual practice record${newRecords.length === 1 ? "" : "s"} on this device...`;
@@ -252,11 +381,21 @@ async function saveGroupPractice() {
 }
 
 function resetGroup() {
-  $("practiceDate").value = todayLocal();
+  captureDraft();
+  const pending = Object.entries(draft.exercises).some(([exercise, cards]) =>
+    cards.some(c => c?.locked) && !draft.records[exercise]);
+  if (pending) {
+    $("status").textContent = "Save every exercise with locked scores before starting a new group entry.";
+    $("status").className = "status error";
+    return;
+  }
+  draft = newDraft();
+  $("studentCards").innerHTML = "";
+  $("practiceDate").value = draft.date;
   $("groupName").value = "";
   $("studentCount").value = "4";
-  renderStudentCards();
-  $("status").textContent = "";
+  selectExercise(1);
+  $("status").textContent = "New practice entry. Previous saved scores remain unchanged.";
   $("status").className = "status";
 }
 
@@ -355,18 +494,28 @@ function exportJSON() {
 }
 
 function clearLocalData() {
-  if (!confirm("Delete all Level 1 practice entries saved on this device?")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  renderTable();
-  $("status").textContent = "Local practice data cleared.";
-  $("status").className = "status ok";
+  $("status").textContent = "Deleting results from this page is disabled.";
+  $("status").className = "status error";
 }
 
 document.querySelectorAll(".stage").forEach((button) => {
   button.addEventListener("click", () => selectExercise(button.dataset.exercise));
 });
 
-$("studentCount").addEventListener("change", renderStudentCards);
+$("studentCount").addEventListener("change", () => {
+  const count = Number($("studentCount").value);
+  const hiddenLocked = Object.values(draft.exercises).some(cards =>
+    cards.slice(count).some(c => c?.locked));
+  if (hiddenLocked) {
+    $("studentCount").value = String(draft.count);
+    $("status").textContent = "A player with a locked score cannot be removed.";
+    return;
+  }
+  captureDraft();
+  renderStudentCards();
+});
+$("practiceDate").addEventListener("change", captureDraft);
+$("groupName").addEventListener("input", captureDraft);
 $("saveGroupBtn").addEventListener("click", saveGroupPractice);
 $("resetGroupBtn").addEventListener("click", resetGroup);
 $("exportBtn").addEventListener("click", exportCSV);
@@ -376,7 +525,10 @@ $("filterPlayer").addEventListener("input", renderTable);
 $("filterExercise").addEventListener("change", renderTable);
 $("filterGroup").addEventListener("input", renderTable);
 
-$("practiceDate").value = todayLocal();
-selectExercise(1);
-renderStudentCards();
+$("practiceDate").value = draft.date;
+$("groupName").value = draft.groupName;
+$("studentCount").value = String(draft.count);
+$("clearBtn").disabled = true;
+$("clearBtn").title = "Deleting saved results is disabled.";
+selectExercise(draft.exercise);
 renderTable();
