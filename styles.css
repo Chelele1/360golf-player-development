@@ -394,3 +394,6 @@ footer {
   .card { box-shadow: none; break-inside: avoid; }
   .actions, .filters, #clearBtn { display: none !important; }
 }
+
+/* Small CHQ 360 logo; existing layout and behavior unchanged */
+.chq360-logo { display:block; width:76px; max-width:100%; height:auto; margin:0 0 8px; }
